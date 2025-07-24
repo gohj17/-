@@ -1,0 +1,685 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학급 투표 & 설문 시스템</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .tab-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 0 5px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-button.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        .option-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .option-input input {
+            flex: 1;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .add-option-btn {
+            background: #28a745;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .poll-item,
+        .survey-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .poll-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .poll-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .poll-meta {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .vote-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .vote-option:hover {
+            border-color: #667eea;
+        }
+
+        .vote-option.selected {
+            background: #e3f2fd;
+            border-color: #667eea;
+        }
+
+        .vote-option input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            height: 100%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .results-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .no-polls {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .tab-button {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+            
+            .tab-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗳️ 학급 투표 & 설문 시스템</h1>
+            <p>실시간으로 투표하고 결과를 확인하세요</p>
+        </div>
+
+        <div class="tab-container">
+            <button class="tab-button active" onclick="showTab('create')">투표/설문 만들기</button>
+            <button class="tab-button" onclick="showTab('participate')">참여하기</button>
+            <button class="tab-button" onclick="showTab('results')">결과 보기</button>
+        </div>
+
+        <!-- 투표/설문 만들기 탭 -->
+        <div id="create-tab" class="tab-content active">
+            <h2>새 투표/설문 만들기</h2>
+            
+            <div class="form-group">
+                <label>유형 선택:</label>
+                <select id="poll-type" onchange="togglePollType()">
+                    <option value="poll">투표 (객관식)</option>
+                    <option value="survey">설문 (주관식)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>제목:</label>
+                <input type="text" id="poll-title" placeholder="투표/설문 제목을 입력하세요">
+            </div>
+
+            <div class="form-group">
+                <label>설명:</label>
+                <textarea id="poll-description" rows="3" placeholder="투표/설문에 대한 설명을 입력하세요"></textarea>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="anonymous">
+                <label for="anonymous">익명 투표</label>
+            </div>
+
+            <div id="poll-options-section">
+                <label>선택지:</label>
+                <div id="poll-options">
+                    <div class="option-input">
+                        <input type="text" placeholder="선택지 1">
+                        <button type="button" class="btn btn-danger" onclick="removeOption(this)">삭제</button>
+                    </div>
+                    <div class="option-input">
+                        <input type="text" placeholder="선택지 2">
+                        <button type="button" class="btn btn-danger" onclick="removeOption(this)">삭제</button>
+                    </div>
+                </div>
+                <button type="button" class="btn add-option-btn" onclick="addOption()">+ 선택지 추가</button>
+            </div>
+
+            <div id="survey-section" class="hidden">
+                <div class="form-group">
+                    <label>질문:</label>
+                    <textarea id="survey-question" rows="2" placeholder="주관식 질문을 입력하세요"></textarea>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <button class="btn" onclick="createPoll()">투표/설문 만들기</button>
+            </div>
+        </div>
+
+        <!-- 참여하기 탭 -->
+        <div id="participate-tab" class="tab-content">
+            <h2>투표/설문 참여</h2>
+            <div id="active-polls"></div>
+        </div>
+
+        <!-- 결과 보기 탭 -->
+        <div id="results-tab" class="tab-content">
+            <h2>투표/설문 결과</h2>
+            <div id="poll-results"></div>
+        </div>
+    </div>
+
+    <script>
+        let polls = JSON.parse(localStorage.getItem('classPolls')) || [];
+        let votes = JSON.parse(localStorage.getItem('classVotes')) || {};
+
+        function showTab(tabName) {
+            // 탭 버튼 활성화
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 탭 내용 표시
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + '-tab').classList.add('active');
+
+            if (tabName === 'participate') {
+                displayActivePolls();
+            } else if (tabName === 'results') {
+                displayResults();
+            }
+        }
+
+        function togglePollType() {
+            const pollType = document.getElementById('poll-type').value;
+            const pollOptionsSection = document.getElementById('poll-options-section');
+            const surveySection = document.getElementById('survey-section');
+
+            if (pollType === 'poll') {
+                pollOptionsSection.classList.remove('hidden');
+                surveySection.classList.add('hidden');
+            } else {
+                pollOptionsSection.classList.add('hidden');
+                surveySection.classList.remove('hidden');
+            }
+        }
+
+        function addOption() {
+            const pollOptions = document.getElementById('poll-options');
+            const optionCount = pollOptions.children.length + 1;
+            
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'option-input';
+            optionDiv.innerHTML = `
+                <input type="text" placeholder="선택지 ${optionCount}">
+                <button type="button" class="btn btn-danger" onclick="removeOption(this)">삭제</button>
+            `;
+            
+            pollOptions.appendChild(optionDiv);
+        }
+
+        function removeOption(button) {
+            const pollOptions = document.getElementById('poll-options');
+            if (pollOptions.children.length > 2) {
+                button.parentElement.remove();
+            } else {
+                alert('최소 2개의 선택지가 필요합니다.');
+            }
+        }
+
+        function createPoll() {
+            const pollType = document.getElementById('poll-type').value;
+            const title = document.getElementById('poll-title').value.trim();
+            const description = document.getElementById('poll-description').value.trim();
+            const anonymous = document.getElementById('anonymous').checked;
+
+            if (!title) {
+                alert('제목을 입력해주세요.');
+                return;
+            }
+
+            const poll = {
+                id: Date.now(),
+                type: pollType,
+                title: title,
+                description: description,
+                anonymous: anonymous,
+                createdAt: new Date().toLocaleString('ko-KR'),
+                active: true
+            };
+
+            if (pollType === 'poll') {
+                const optionInputs = document.querySelectorAll('#poll-options input');
+                const options = [];
+                
+                optionInputs.forEach(input => {
+                    const value = input.value.trim();
+                    if (value) {
+                        options.push(value);
+                    }
+                });
+
+                if (options.length < 2) {
+                    alert('최소 2개의 선택지를 입력해주세요.');
+                    return;
+                }
+
+                poll.options = options;
+            } else {
+                const question = document.getElementById('survey-question').value.trim();
+                if (!question) {
+                    alert('질문을 입력해주세요.');
+                    return;
+                }
+                poll.question = question;
+            }
+
+            polls.push(poll);
+            localStorage.setItem('classPolls', JSON.stringify(polls));
+
+            // 폼 초기화
+            document.getElementById('poll-title').value = '';
+            document.getElementById('poll-description').value = '';
+            document.getElementById('anonymous').checked = false;
+            document.getElementById('survey-question').value = '';
+            
+            // 선택지 초기화
+            const pollOptions = document.getElementById('poll-options');
+            pollOptions.innerHTML = `
+                <div class="option-input">
+                    <input type="text" placeholder="선택지 1">
+                    <button type="button" class="btn btn-danger" onclick="removeOption(this)">삭제</button>
+                </div>
+                <div class="option-input">
+                    <input type="text" placeholder="선택지 2">
+                    <button type="button" class="btn btn-danger" onclick="removeOption(this)">삭제</button>
+                </div>
+            `;
+
+            alert('투표/설문이 성공적으로 생성되었습니다!');
+        }
+
+        function displayActivePolls() {
+            const container = document.getElementById('active-polls');
+            const activePolls = polls.filter(poll => poll.active);
+
+            if (activePolls.length === 0) {
+                container.innerHTML = '<div class="no-polls">현재 진행중인 투표/설문이 없습니다.</div>';
+                return;
+            }
+
+            container.innerHTML = activePolls.map(poll => {
+                if (poll.type === 'poll') {
+                    return `
+                        <div class="poll-item">
+                            <div class="poll-title">${poll.title}</div>
+                            <div class="poll-meta">
+                                ${poll.description ? `<div>${poll.description}</div>` : ''}
+                                <div>생성일: ${poll.createdAt} ${poll.anonymous ? '(익명)' : '(공개)'}</div>
+                            </div>
+                            <div class="vote-options">
+                                ${poll.options.map((option, index) => `
+                                    <div class="vote-option" onclick="selectOption(${poll.id}, ${index})">
+                                        <input type="radio" name="poll-${poll.id}" value="${index}">
+                                        <span>${option}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <button class="btn" onclick="submitVote(${poll.id})">투표하기</button>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="survey-item">
+                            <div class="poll-title">${poll.title}</div>
+                            <div class="poll-meta">
+                                ${poll.description ? `<div>${poll.description}</div>` : ''}
+                                <div>생성일: ${poll.createdAt} ${poll.anonymous ? '(익명)' : '(공개)'}</div>
+                            </div>
+                            <div class="form-group">
+                                <label>${poll.question}</label>
+                                <textarea id="survey-answer-${poll.id}" rows="3" placeholder="답변을 입력하세요"></textarea>
+                            </div>
+                            <button class="btn" onclick="submitSurvey(${poll.id})">제출하기</button>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        function selectOption(pollId, optionIndex) {
+            document.querySelectorAll(`input[name="poll-${pollId}"]`).forEach(radio => {
+                radio.checked = false;
+                radio.parentElement.classList.remove('selected');
+            });
+            
+            const selectedRadio = document.querySelector(`input[name="poll-${pollId}"][value="${optionIndex}"]`);
+            selectedRadio.checked = true;
+            selectedRadio.parentElement.classList.add('selected');
+        }
+
+        function submitVote(pollId) {
+            const selectedOption = document.querySelector(`input[name="poll-${pollId}"]:checked`);
+            
+            if (!selectedOption) {
+                alert('선택지를 선택해주세요.');
+                return;
+            }
+
+            const optionIndex = parseInt(selectedOption.value);
+            
+            if (!votes[pollId]) {
+                votes[pollId] = [];
+            }
+
+            votes[pollId].push({
+                option: optionIndex,
+                timestamp: new Date().toLocaleString('ko-KR')
+            });
+
+            localStorage.setItem('classVotes', JSON.stringify(votes));
+            alert('투표가 완료되었습니다!');
+            
+            // 선택 해제
+            document.querySelectorAll(`input[name="poll-${pollId}"]`).forEach(radio => {
+                radio.checked = false;
+                radio.parentElement.classList.remove('selected');
+            });
+        }
+
+        function submitSurvey(pollId) {
+            const answer = document.getElementById(`survey-answer-${pollId}`).value.trim();
+            
+            if (!answer) {
+                alert('답변을 입력해주세요.');
+                return;
+            }
+
+            if (!votes[pollId]) {
+                votes[pollId] = [];
+            }
+
+            votes[pollId].push({
+                answer: answer,
+                timestamp: new Date().toLocaleString('ko-KR')
+            });
+
+            localStorage.setItem('classVotes', JSON.stringify(votes));
+            alert('설문 답변이 제출되었습니다!');
+            
+            document.getElementById(`survey-answer-${pollId}`).value = '';
+        }
+
+        function displayResults() {
+            const container = document.getElementById('poll-results');
+            
+            if (polls.length === 0) {
+                container.innerHTML = '<div class="no-polls">생성된 투표/설문이 없습니다.</div>';
+                return;
+            }
+
+            container.innerHTML = polls.map(poll => {
+                const pollVotes = votes[poll.id] || [];
+                
+                if (poll.type === 'poll') {
+                    const totalVotes = pollVotes.length;
+                    const optionCounts = new Array(poll.options.length).fill(0);
+                    
+                    pollVotes.forEach(vote => {
+                        if (vote.option !== undefined) {
+                            optionCounts[vote.option]++;
+                        }
+                    });
+
+                    return `
+                        <div class="poll-item">
+                            <div class="poll-header">
+                                <div class="poll-title">${poll.title}</div>
+                                <button class="btn btn-secondary" onclick="togglePollStatus(${poll.id})">${poll.active ? '종료' : '재시작'}</button>
+                            </div>
+                            <div class="poll-meta">
+                                ${poll.description ? `<div>${poll.description}</div>` : ''}
+                                <div>생성일: ${poll.createdAt} • 총 투표수: ${totalVotes}표 ${poll.anonymous ? '(익명)' : '(공개)'}</div>
+                            </div>
+                            <div class="results-section">
+                                ${poll.options.map((option, index) => {
+                                    const count = optionCounts[index];
+                                    const percentage = totalVotes > 0 ? (count / totalVotes * 100).toFixed(1) : 0;
+                                    return `
+                                        <div style="margin-bottom: 15px;">
+                                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                                <span>${option}</span>
+                                                <span>${count}표 (${percentage}%)</span>
+                                            </div>
+                                            <div class="progress-bar">
+                                                <div class="progress-fill" style="width: ${percentage}%">
+                                                    ${percentage > 10 ? percentage + '%' : ''}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="survey-item">
+                            <div class="poll-header">
+                                <div class="poll-title">${poll.title}</div>
+                                <button class="btn btn-secondary" onclick="togglePollStatus(${poll.id})">${poll.active ? '종료' : '재시작'}</button>
+                            </div>
+                            <div class="poll-meta">
+                                ${poll.description ? `<div>${poll.description}</div>` : ''}
+                                <div>질문: ${poll.question}</div>
+                                <div>생성일: ${poll.createdAt} • 총 응답수: ${pollVotes.length}개 ${poll.anonymous ? '(익명)' : '(공개)'}</div>
+                            </div>
+                            <div class="results-section">
+                                <h4>응답 목록:</h4>
+                                ${pollVotes.length > 0 ? pollVotes.map((vote, index) => `
+                                    <div style="background: white; padding: 10px; margin: 5px 0; border-radius: 5px; border-left: 3px solid #667eea;">
+                                        <div style="font-size: 0.9rem; color: #666; margin-bottom: 5px;">응답 ${index + 1} • ${vote.timestamp}</div>
+                                        <div>${vote.answer}</div>
+                                    </div>
+                                `).join('') : '<div style="color: #666; font-style: italic;">아직 응답이 없습니다.</div>'}
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        function togglePollStatus(pollId) {
+            const poll = polls.find(p => p.id === pollId);
+            if (poll) {
+                poll.active = !poll.active;
+                localStorage.setItem('classPolls', JSON.stringify(polls));
+                displayResults();
+                alert(poll.active ? '투표/설문이 재시작되었습니다.' : '투표/설문이 종료되었습니다.');
+            }
+        }
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            displayActivePolls();
+        });
+    </script>
+</body>
+</html>
